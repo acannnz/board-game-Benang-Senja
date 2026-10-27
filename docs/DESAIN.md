@@ -47,9 +47,18 @@ Hari 1 pasti bertukar tubuh. Dari Hari 2–8 ada 4 hari tukar dan 3 hari normal 
 | Belanja | tubuh Taki di Kafe, Uang ≥ 1 | Uang −1, Ingatan pemain +1 |
 | Kumihimo | Kuil Miyamizu atau Tangga Kuil | Ingatan pemain +1 (sekali per giliran) |
 | Selidiki | **hanya saat bertukar** | Pemain Taki di Itomori: dapat 1 Ciri dari lokasi itu. Pemain Mitsuha di Tokyo: dapat 1 Jejak (sekali per lokasi) |
+| Cari Petunjuk | **hanya saat bertukar**, di kota pasangan | Geledah lokasi itu (sekali per lokasi). Kalau ada, dapat 1 Aturan Hidup pasangan dalam bentuk lengkap |
 
 ### Aturan Hidup (rahasia)
-Setiap tubuh punya 3 Aturan Hidup yang hanya diketahui pemiliknya. Kalau pasangan melanggarnya saat bertukar, ia mendapat 1 Kekacauan dan aturan itu terbuka. Jenis aturan:
+Setiap tubuh punya 3 Aturan Hidup (diambil acak dari 6) yang hanya diketahui pemiliknya. Di awal permainan, ketiganya disembunyikan di 3 lokasi acak di kota pemiliknya. Lokasi itu tetap selama satu permainan, jadi hasil geledah layak dicatat.
+
+Cara pasangan mengetahui aturan:
+- **Cari Petunjuk** di lokasi yang tepat. Hasilnya tersimpan di Ponsel → Aturan dan Buku.
+- **Catatan** dari pemilik tubuh.
+
+Kalau aturan dilanggar saat bertukar, pelanggar mendapat 1 Kekacauan dan hanya diberi tahu "ada yang salah". **Aturan itu tidak terbuka.** Pemilik tubuh diberi tahu aturan mana yang dilanggar, lalu boleh memberitahu lewat catatan atau tidak. Ponsel → Buku juga menyediakan memo pribadi yang hanya tersimpan di perangkat sendiri.
+
+Jenis aturan:
 - **Larangan masuk** suatu lokasi
 - **Larangan aksi** tertentu
 - **Wajib mampir** ke suatu lokasi selama giliran

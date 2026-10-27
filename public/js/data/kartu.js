@@ -23,6 +23,16 @@ export const ATURAN = {
 };
 export const aturanById = id => ATURAN.taki.concat(ATURAN.mitsuha).find(a => a.id === id);
 
+// benda tempat petunjuk aturan hidup disembunyikan di tiap lokasi (aksi Cari Petunjuk)
+export const BENDA = {
+  t_apt:'memo di pintu kulkas', t_stasiun:'kartu kereta di saku jaket', t_sekolah:'coretan di buku pelajaran',
+  t_perpus:'surat peringatan perpustakaan', t_obs:'catatan di ponsel Taki', t_resto:'jadwal kerja di loker',
+  t_kafe:'struk belanja yang dilipat', t_tangga:'sketsa di buku gambar',
+  i_gunung:'tulisan di batu kuil', i_kuil:'pesan Nenek di altar', i_rumah:'buku harian Mitsuha',
+  i_bangku:'chat dari Tessie', i_danau:'kertas basah di dermaga', i_gardu:'tempelan di tiang listrik',
+  i_balai:'surat dari Ayah', i_siaran:'catatan Sayaka', i_sekolah:'tulisan di meja kelas',
+};
+
 // Misi Rahasia. Indeks pemain: 0 = Pemain Taki, 1 = Pemain Mitsuha.
 // cek(s) dipanggil di akhir permainan; s.akhirB1 menyimpan keadaan saat Babak 1 berakhir.
 export const MISI = [

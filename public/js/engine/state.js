@@ -1,7 +1,7 @@
 // Bentuk state permainan dan pembantu kecil yang dipakai mesin aturan.
 // Satu state = satu dokumen room di server. Indeks pemain: 0 = Pemain Taki, 1 = Pemain Mitsuha.
 import { ATURAN, MISI, KEJADIAN, KRISIS } from '../data/kartu.js';
-import { DESA } from '../data/peta.js';
+import { DESA, LOKASI } from '../data/peta.js';
 
 export const AKSI_DASAR = 3;
 export const AKSI_TAKI_B3 = 3;
@@ -24,7 +24,15 @@ export function buatRoom(pemain) {
   return { v:1, seq:1, phase:'lobby', players:[pemain[0] || null, pemain[1] || null], fx:[], log:[] };
 }
 
+// tiap aturan rahasia disembunyikan di satu lokasi acak di kota pemiliknya: { lokasi: idAturan }
+function sembunyikan(ids, papan) {
+  const tempat = kocok(Object.keys(LOKASI).filter(id => LOKASI[id].papan === papan)), out = {};
+  ids.forEach((id, i) => { out[tempat[i]] = id; });
+  return out;
+}
+
 export function buatGame(room) {
+  const aturan = { taki:kocok(ATURAN.taki.map(a => a.id)).slice(0, 3), mitsuha:kocok(ATURAN.mitsuha.map(a => a.id)).slice(0, 3) };
   const s = {
     v:1, seq:(room.seq || 0) + 1, phase:'main',
     players:room.players,
@@ -39,8 +47,11 @@ export function buatGame(room) {
     pos:{ taki:'t_apt', mitsuha:'i_rumah', tessie:'i_bangku', sayaka:'i_sekolah' },
     ingatan:[8, 8], kekacauan:[0, 0], uang:3,
     trust:{ tsukasa:0, okudera:0, nenek:0, yotsuha:0, tessie:0, sayaka:0, ayah:0 },
-    aturan:{ taki:kocok(ATURAN.taki.map(a => a.id)).slice(0, 3), mitsuha:kocok(ATURAN.mitsuha.map(a => a.id)).slice(0, 3) },
-    terbuka:{ taki:[], mitsuha:[] },
+    aturan,
+    terbuka:{ taki:[], mitsuha:[] },       // aturan yang sudah ditemukan pasangan lewat Cari Petunjuk
+    dilanggar:{ taki:[], mitsuha:[] },     // aturan yang pernah dilanggar (hanya pemiliknya yang tahu yang mana)
+    petunjuk:{ taki:sembunyikan(aturan.taki, 'tokyo'), mitsuha:sembunyikan(aturan.mitsuha, 'itomori') },
+    digeledah:{ taki:[], mitsuha:[] },     // lokasi yang sudah digeledah di kota pemilik tubuh
     misi:[kocok(MISI[0].map(m => m.id)).slice(0, 2), kocok(MISI[1].map(m => m.id)).slice(0, 2)],
     stat:{ okuderaTukar:0, kafeTukar:0, jejakDipasang:0 },
     ciri:[], jejak:0, selidik:[],

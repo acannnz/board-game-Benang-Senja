@@ -1,8 +1,8 @@
 // Kartu-kartu modal: kejadian & krisis, ponsel (catatan, aturan hidup, misi, kota), log, aturan main,
 // layar senja, tebakan akhir, dan skor.
-import { $, esc } from '../util.js';
+import { $, esc, lsGet, lsSet } from '../util.js';
 import { app } from '../app.js';
-import { KEJADIAN, KRISIS, ATURAN, MISI, aturanById, misiById } from '../data/kartu.js';
+import { KEJADIAN, KRISIS, MISI, BENDA, aturanById, misiById } from '../data/kartu.js';
 import { TOKOH, CIRI, LOKASI, tokohDi } from '../data/peta.js';
 import { tubuhSendiri, tubuhPasangan, TARGET_WARGA, JAM_B3 } from '../engine/state.js';
 
@@ -41,7 +41,7 @@ export function bukaPonsel(tab) {
   if (tab) tabPonsel = tab;
   const s = app.S, me = app.me;
   if (!s || me == null || !s.misi) return;
-  const tabs = [['catatan', 'Catatan'], ['hidup', 'Aturan'], ['misi', 'Misi'], ['kota', 'Kota']];
+  const tabs = [['catatan', 'Catatan'], ['hidup', 'Aturan'], ['buku', 'Buku'], ['misi', 'Misi'], ['kota', 'Kota']];
   let isi = '';
   if (tabPonsel === 'catatan') {
     app.dibaca = s.catatan.length;
@@ -49,13 +49,26 @@ export function bukaPonsel(tab) {
       : `<p class="kosong">${s.babak >= 2 ? 'Semua catatan sudah menghilang…' : 'Belum ada catatan. Tulis catatan di akhir giliranmu.'}</p>`;
   } else if (tabPonsel === 'hidup') {
     const milik = tubuhSendiri(me), lain = tubuhPasangan(me);
-    const item = (id, terbuka) => { const a = aturanById(id); return `<div class="aturan-item ${terbuka ? 'langgar' : ''}"><span class="tag2">${terbuka ? 'terbuka' : 'rahasia'}</span><span>${esc(a.teks)}</span></div>`; };
+    const item = (id, tag, kelas = '') => `<div class="aturan-item ${kelas}"><span class="tag2">${tag}</span><span>${esc(aturanById(id).teks)}</span></div>`;
     isi = `<h3>Aturan hidup ${milik === 'taki' ? 'Taki' : 'Mitsuha'} (milikmu)</h3>
-      <p class="kecil">Pasanganmu harus mematuhinya saat memakai tubuhmu. Beri tahu lewat catatan.</p>
-      ${s.aturan[milik].map(id => item(id, s.terbuka[milik].includes(id))).join('')}
-      <h3>Aturan hidup ${lain === 'taki' ? 'Taki' : 'Mitsuha'} yang sudah kamu ketahui</h3>
-      ${s.terbuka[lain].length ? s.terbuka[lain].map(id => item(id, true)).join('') : '<p class="kosong">Belum ada. Ada 3 aturan rahasia; melanggarnya memberi Kekacauan.</p>'}
+      <p class="kecil">Pasanganmu harus mematuhinya saat memakai tubuhmu. Ia hanya tahu lewat Cari Petunjuk atau catatanmu.</p>
+      ${s.aturan[milik].map(id => item(id, s.terbuka[milik].includes(id) ? 'sudah ia temukan' : s.dilanggar[milik].includes(id) ? 'pernah dilanggar' : 'rahasia',
+        s.dilanggar[milik].includes(id) && !s.terbuka[milik].includes(id) ? 'langgar' : '')).join('')}
+      <h3>Aturan hidup ${lain === 'taki' ? 'Taki' : 'Mitsuha'} yang sudah kamu temukan</h3>
+      ${s.terbuka[lain].length ? s.terbuka[lain].map(id => item(id, 'ditemukan')).join('') : '<p class="kosong">Belum ada. Ada 3 aturan rahasia: geledah lokasi dengan Cari Petunjuk saat bertukar tubuh.</p>'}
       <p class="kecil">Kekacauanmu: <b>${s.kekacauan[me]}</b> (masing-masing −1 Poin Kenangan)</p>`;
+  } else if (tabPonsel === 'buku') {
+    const lain = tubuhPasangan(me), kota = lain === 'taki' ? 'tokyo' : 'itomori';
+    const semua = Object.keys(LOKASI).filter(id => LOKASI[id].papan === kota);
+    const baris = semua.map(loc => {
+      const sudah = s.digeledah[lain].includes(loc), id = s.petunjuk[lain][loc];
+      const hasil = !sudah ? '<span class="tag2">belum</span>' : id ? '<span class="tag2 ada">✓ petunjuk</span>' : '<span class="tag2">✗ kosong</span>';
+      return `<div class="aturan-item ${sudah && id ? 'temu' : ''}">${hasil}<span><b>${esc(LOKASI[loc].nama)}</b>${sudah && id ? `<br><small>${esc(BENDA[loc])}: "${esc(aturanById(id).teks)}"</small>` : ''}</span></div>`;
+    }).join('');
+    isi = `<p class="kecil">Hasil Cari Petunjuk di ${kota === 'tokyo' ? 'Tokyo' : 'Itomori'}. Setiap lokasi hanya bisa digeledah sekali, dan 3 aturan rahasia tersembunyi di 3 lokasi.</p>
+      ${baris}
+      <h3>Memo pribadi</h3><p class="kecil">Hanya tersimpan di perangkat ini.</p>
+      <textarea id="inMemo" rows="4" maxlength="600" placeholder="Dugaanmu, mis. &quot;kayaknya Mitsuha nggak boleh ke balai kota&quot;">${esc(lsGet(kunciMemo()) || '')}</textarea>`;
   } else if (tabPonsel === 'misi') {
     isi = `<p class="kecil">Misi ini rahasia. Di akhir permainan kalian akan saling menebak.</p>` +
       s.misi[me].map(id => { const m = misiById(id); return `<div class="misi"><b>+${m.poin} Poin Kenangan</b><br>${esc(m.teks)}</div>`; }).join('');
@@ -71,8 +84,20 @@ export function bukaPonsel(tab) {
   bukaModal('ponsel', `<div class="sheet"><span class="label">Ponsel</span>
     <div class="tabs" role="tablist">${tabs.map(([k, n]) => `<button role="tab" aria-selected="${k === tabPonsel}" data-act="tabPonsel" data-tab="${k}">${n}</button>`).join('')}</div>
     ${isi}<div class="actions"><button class="btn lebar" data-act="tutup">Tutup</button></div></div>`);
+  const memo = $('#inMemo');
+  if (memo) memo.addEventListener('input', () => lsSet(kunciMemo(), memo.value));
 }
 const namaPemain = k => (app.S.players[k] || {}).name || (k === 0 ? 'Taki' : 'Mitsuha');
+const kunciMemo = () => `bs_memo_${app.kode}_${app.me}`;
+
+/* ---------- hasil Cari Petunjuk ---------- */
+export function kartuPetunjuk(loc, id) {
+  return new Promise(res => bukaModal('kartu', `<div class="sheet kartu-kejadian">
+    <span class="label">Petunjuk ditemukan</span><div class="ikon">📝</div>
+    <h2>${esc(BENDA[loc])}</h2><p>"${esc(aturanById(id).teks)}"</p>
+    <p class="kecil">Tersimpan di Ponsel → Aturan dan Buku. Patuhi saat memakai tubuh ini.</p>
+    <div class="actions"><button class="btn utama lebar" data-act="tutup" autofocus>Dicatat</button></div></div>`, res));
+}
 
 /* ---------- info lokasi ---------- */
 export function infoLokasi(id) {
@@ -98,7 +123,7 @@ export function bukaBantuan() {
   bukaModal('bantuan', `<div class="sheet"><span class="label">Cara main</span><h2>Benang Senja</h2>
     <p>Kalian berdua <b>menang bersama</b> kalau minimal ${TARGET_WARGA} dari 18 warga Itomori selamat sebelum komet jatuh, dan <b>kalah bersama</b> kalau Ingatan salah satu dari kalian habis.</p>
     <h3>Babak 1 · Pertukaran (Hari 1–8)</h3>
-    <p>Di hari tukar kamu menjalankan tubuh pasanganmu. Patuhi Aturan Hidupnya (rahasia, kirim lewat catatan maksimal 5 kata). Pemain Taki yang menyelidiki Itomori menemukan <b>Ciri</b>; Pemain Mitsuha yang menyelidiki Tokyo mendapat <b>Jejak</b>.</p>
+    <p>Di hari tukar kamu menjalankan tubuh pasanganmu. Patuhi 3 Aturan Hidupnya yang rahasia: temukan lewat <b>Cari Petunjuk</b> (tiap lokasi sekali, petunjuk tersembunyi di 3 lokasi) atau lewat catatan pasanganmu (maksimal 5 kata). Melanggar memberi Kekacauan tanpa memberi tahu aturan mana. Pemain Taki yang menyelidiki Itomori menemukan <b>Ciri</b>; Pemain Mitsuha yang menyelidiki Tokyo mendapat <b>Jejak</b>.</p>
     <h3>Babak 2 · Pencarian (Hari 9–13)</h3>
     <p>Ingatan berkurang setiap pagi. Taki mencari Itomori di peta Hida (tiket 2 Uang), lalu naik ke Kuil Gunung dan minum sake. Mitsuha memasang jejak dan menyiapkan bahan serta latihan siaran.</p>
     <h3>Senja</h3><p>60 detik bebas bicara apa saja.</p>

@@ -57,12 +57,12 @@ function coretAcak(s) {
 }
 
 /* ---------- Aturan Hidup ---------- */
+// melanggar tidak membuka aturannya: pelanggar hanya tahu "ada yang salah", pemilik tubuh tahu aturan mana
 function langgar(s, who, tubuh, id) {
-  const at = aturanById(id);
   s.kekacauan[who]++;
-  if (!s.terbuka[tubuh].includes(id)) s.terbuka[tubuh].push(id);
+  if (!s.dilanggar[tubuh].includes(id)) s.dilanggar[tubuh].push(id);
   s.fx.push({ t:'langgar', who, id });
-  tambahLog(s, `${namaPeran(who)} melanggar aturan hidup ${NAMA_PION[tubuh]}: "${at.teks}"`);
+  tambahLog(s, `${namaPeran(who)} melanggar salah satu aturan hidup ${NAMA_PION[tubuh]}. Kekacauan +1.`);
 }
 // cek aturan untuk kejadian tertentu (masuk / aksi / ngobrol) saat bertukar
 function cekAturan(s, who, pion, jenis, nilai) {
@@ -230,6 +230,7 @@ export function daftarAksi(s, who) {
       if ((loc === 'i_kuil' || loc === 't_tangga') && !s.turn.kumihimo) add({ t:'kumihimo' }, loc === 'i_kuil' ? 'Merangkai kumihimo' : 'Merenung di tangga', 1, 'Ingatan +1');
       if (tukar && who === 0 && L.papan === 'itomori' && ciriDi(loc) && !s.ciri.includes(ciriDi(loc))) add({ t:'selidiki' }, 'Selidiki tempat ini', 1, 'Dapat 1 ciri Itomori');
       if (tukar && who === 1 && L.papan === 'tokyo' && !s.selidik.includes(loc)) add({ t:'selidiki' }, 'Selidiki tempat ini', 1, 'Dapat 1 Jejak');
+      if (tukar && pion === tubuhPasangan(who) && !s.digeledah[pion].includes(loc)) add({ t:'geledah' }, 'Cari petunjuk aturan hidup', 1, 'Mungkin ada catatan rahasia di sini');
     }
     if (s.babak === 2 && who === 0) {
       if (loc === 't_stasiun') add({ t:'berangkat' }, s.uang >= 2 ? 'Berangkat ke Hida' : 'Berangkat ke Hida (Uang kurang)', 1, 'Tiket 2 Uang');
@@ -359,6 +360,14 @@ export function jalankan(s0, who, a) {
         s.fx.push({ t:'jejak', n:1 });
         tambahLog(s, `Mitsuha meninggalkan kenangan di ${LOKASI[loc].nama}. Jejak +1.`);
       }
+      break;
+    }
+    case 'geledah': {
+      const pion = pionMilik(s, who)[0], loc = s.pos[pion], id = s.petunjuk[pion][loc] || null;
+      s.digeledah[pion].push(loc);
+      if (id && !s.terbuka[pion].includes(id)) s.terbuka[pion].push(id);
+      s.fx.push({ t:'petunjuk', who, loc, id });
+      tambahLog(s, `${namaPeran(who)} menggeledah ${LOKASI[loc].nama}: ${id ? 'menemukan petunjuk!' : 'tidak ada apa-apa.'}`);
       break;
     }
     case 'berangkat':

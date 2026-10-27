@@ -1,6 +1,7 @@
 // Papan 3D: diorama Tokyo dan Itomori, jalur, bangunan tiap lokasi, tokoh, pion, warga, dan peta desa Hida.
 import { PAPAN, LOKASI, JALUR, TOKOH, DESA, DANAU } from '../data/peta.js';
 import { statusDesa } from '../engine/aturan.js';
+import { tubuhPasangan } from '../engine/state.js';
 import { dunia, kilatan } from './dunia.js';
 const THREE = window.THREE;
 
@@ -345,6 +346,7 @@ export function perbarui(s, me) {
     d.tile.material.emissiveIntensity = st === 'itomori' ? 0.6 : 0;
   }
   aturWarga(s);
+  aturTanda(s, me);
   const malam = s.babak === 3 || s.phase === 'senja';
   matJendelaItomori.emissiveIntensity = s.evak && s.evak.listrikMati ? 0 : malam ? 0.9 : 0.15;
   matJendelaTokyo.emissiveIntensity = s.babak === 2 ? 0.6 : 0.25;
@@ -375,6 +377,22 @@ function aturWarga(s) {
       w.position.set(cx - (i % kol) * 0.24, 0, cz + arahZ * Math.floor(i / kol) * 0.24);
       g.add(w);
     }
+  }
+}
+
+// tanda kecil di atas lokasi yang sudah kugeledah (Cari Petunjuk): hanya terlihat oleh penggeledahnya
+const tanda = {};
+function aturTanda(s, me) {
+  const tubuh = me == null || !s.digeledah ? null : tubuhPasangan(me);
+  const sudah = tubuh ? s.digeledah[tubuh] : [];
+  for (const loc in LOKASI) {
+    const ada = sudah.includes(loc), jenis = ada ? (s.petunjuk[tubuh][loc] ? 'temu' : 'kosong') : null;
+    if (tanda[loc] && tanda[loc].userData.jenis !== jenis) { dunia.scene.remove(tanda[loc]); delete tanda[loc]; }
+    if (!jenis || tanda[loc]) continue;
+    const sp = teksSprite(jenis === 'temu' ? '📝 petunjuk' : '✗ kosong', { tinggi:0.3, bg:jenis === 'temu' ? 'rgba(255,207,112,.92)' : 'rgba(60,60,80,.85)', warna:jenis === 'temu' ? '#4a2a08' : '#ddd' });
+    const [x, z] = posisiDunia(loc);
+    sp.position.set(x, tinggiDi(loc) + 2.25, z + 0.2); sp.userData.jenis = jenis;
+    tanda[loc] = sp; dunia.scene.add(sp);
   }
 }
 

@@ -4,7 +4,7 @@ import { app } from './app.js';
 import { jalankan, progresKomet } from './engine/aturan.js';
 import { buatRoom, TARGET_WARGA } from './engine/state.js';
 import { aturanById } from './data/kartu.js';
-import { CIRI, PAPAN } from './data/peta.js';
+import { CIRI, PAPAN, LOKASI } from './data/peta.js';
 import { initDunia, setSuasana, setKomet, arahkanKamera, pasangPilih, kilatan } from './scene/dunia.js';
 import { buatPapan, perbarui, objekPilih, gerakPion, posisiDunia, efekLedak, efekSiaran, efekTemu, efekSenja } from './scene/papan.js';
 import { cobaServer, pesanGalat } from './net/room.js';
@@ -12,7 +12,7 @@ import { renderHUD } from './ui/hud.js';
 import { renderDok, aksiTersedia } from './ui/dok.js';
 import { lemparDadu } from './ui/dadu.js';
 import { lobi, renderLobby, aksiLobby, setOnMasuk, keluarRoom } from './ui/lobby.js';
-import { bukaModal, tutupModal, modalKini, kartuKejadian, bukaPonsel, infoLokasi, bukaLog, bukaBantuan, renderSenja, detikSenja, renderAkhir, renderSkor } from './ui/kartu.js';
+import { bukaModal, tutupModal, modalKini, kartuKejadian, kartuPetunjuk, bukaPonsel, infoLokasi, bukaLog, bukaBantuan, renderSenja, detikSenja, renderAkhir, renderSkor } from './ui/kartu.js';
 
 /* ---------- identitas perangkat ---------- */
 // ?id=... di alamat dipakai untuk menguji dua pemain di satu browser
@@ -94,10 +94,16 @@ async function putarEfek(fx, lama, st) {
       case 'dadu': await lemparDadu(f); break;
       case 'langgar': {
         const a = aturanById(f.id);
-        if (f.who === me) await kilat('Aturan dilanggar!', `"${a.teks}" · Kekacauan +1`, 2000);
+        // pelanggar tidak diberi tahu aturan mana; pemilik tubuh tahu
+        if (f.who === me) await kilat('Ada yang salah…', 'Sepertinya kamu melanggar aturan hidup pasanganmu · Kekacauan +1', 2200);
         else toast(`${NAMA(f.who)} melanggar aturan hidupmu: "${a.teks}"`, 3600);
         break;
       }
+      case 'petunjuk':
+        perbarui(st, me);
+        if (f.who === me) { if (f.id) await kartuPetunjuk(f.loc, f.id); else toast(`${LOKASI[f.loc].nama}: tidak ada petunjuk di sini`, 2600); }
+        else if (f.id) toast(`${NAMA(f.who)} menemukan aturan hidupmu: "${aturanById(f.id).teks}"`, 3600);
+        break;
       case 'ciri': toast(`Ciri Itomori ditemukan: ${CIRI[f.id].nama}`, 3200); break;
       case 'jejak': toast('Jejak +1: Mitsuha meninggalkan kenangan di Tokyo', 2800); break;
       case 'babak':
