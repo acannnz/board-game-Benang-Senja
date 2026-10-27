@@ -2,7 +2,7 @@
 import { $, toast, kilat, lsGet, lsSet, sleep } from './util.js';
 import { app } from './app.js';
 import { jalankan, progresKomet } from './engine/aturan.js';
-import { buatRoom, TARGET_WARGA } from './engine/state.js';
+import { buatRoom, lengkapiState, TARGET_WARGA } from './engine/state.js';
 import { aturanById } from './data/kartu.js';
 import { CIRI, PAPAN, LOKASI } from './data/peta.js';
 import { initDunia, setSuasana, setKomet, arahkanKamera, pasangPilih, kilatan } from './scene/dunia.js';
@@ -48,7 +48,7 @@ function terima(data) {
   if (k < 0) { lobi.room = data; lobi.view = 'ambil'; renderLobby(); return; }
   app.me = k;
   if (lobi.view !== 'none') { lobi.view = 'none'; renderLobby(); }
-  antrian.push(data);
+  antrian.push(lengkapiState(data));
   putar();
 }
 

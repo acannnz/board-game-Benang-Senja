@@ -66,6 +66,16 @@ export function buatGame(room) {
   return s;
 }
 
+// state dari versi lama (sebelum ada Cari Petunjuk): tambahkan bagian yang belum ada.
+// Penyembunyian petunjuk ikut tersimpan saat langkah berikutnya dikirim.
+export function lengkapiState(s) {
+  if (!s || s.phase === 'lobby' || !s.aturan) return s;
+  if (!s.petunjuk) s.petunjuk = { taki:sembunyikan(s.aturan.taki, 'tokyo'), mitsuha:sembunyikan(s.aturan.mitsuha, 'itomori') };
+  if (!s.digeledah) s.digeledah = { taki:[], mitsuha:[] };
+  if (!s.dilanggar) s.dilanggar = { taki:[], mitsuha:[] };
+  return s;
+}
+
 export function tambahLog(s, teks) {
   s.log.push(teks);
   if (s.log.length > 40) s.log.splice(0, s.log.length - 40);
