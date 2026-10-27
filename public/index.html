@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0d1030">
+<title>Benang Senja</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@600;800&family=Zen+Maru+Gothic:wght@400;500;700;900&display=swap">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<div id="app">
+  <div id="stage"></div>
+
+  <!-- HUD atas: kartu pemain dan progres komet -->
+  <header id="hud" hidden>
+    <div class="chip" id="chipMe"></div>
+    <div class="mid">
+      <div class="when" id="when"></div>
+      <div class="komet" aria-label="Jarak komet"><div class="komet-fill" id="kometFill"></div><span class="komet-ico">☄</span></div>
+    </div>
+    <div class="chip right" id="chipThem"></div>
+  </header>
+
+  <!-- tombol samping -->
+  <nav id="side" hidden>
+    <button class="ibtn" data-act="ponsel" aria-label="Ponsel"><span>📱</span><i class="badge" id="badgeNote" hidden></i></button>
+    <button class="ibtn" data-act="kamera" aria-label="Pindah kamera"><span>🎥</span></button>
+    <button class="ibtn" data-act="log" aria-label="Catatan kejadian"><span>📜</span></button>
+    <button class="ibtn" data-act="bantuan" aria-label="Aturan"><span>?</span></button>
+  </nav>
+
+  <!-- dok aksi bawah -->
+  <section id="dock" hidden></section>
+
+  <div id="lobby" hidden></div>
+  <div id="modal" hidden></div>
+  <div id="dice" hidden></div>
+  <div id="flash" hidden></div>
+  <div id="toast" hidden></div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+<script type="module" src="js/main.js"></script>
+</body>
+</html>
